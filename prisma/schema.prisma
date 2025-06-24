@@ -1,0 +1,42 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Ingestion {
+  id         String   @id @default(uuid())
+  documentId String
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  document   Document @relation(fields: [documentId], references: [id])
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  password  String
+  role      Role       @default(Viewer)
+  documents Document[]
+}
+
+model Document {
+  id        String   @id @default(uuid())
+  title     String
+  content   String
+  ownerId   String
+  filePath  String
+  owner     User     @relation(fields: [ownerId], references: [id])
+  createdAt DateTime @default(now())
+  ingestions Ingestion[]
+}
+
+enum Role {
+  Admin
+  Editor
+  Viewer
+}
